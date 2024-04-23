@@ -135,8 +135,8 @@ class dc05_msg:
       if len(event_code) != 3:
           raise ValueError("Event code should be 3 digits")
       
-      if qualifier not in ['1', '3']:
-          raise ValueError("Qualifier should be 1 (new event) or 3 (restore)")
+      if qualifier not in ['1', '3', '6']:
+          raise ValueError("Qualifier should be 1 (new event) or 3 (restore) or 6 (old event)")
 
       qualifier_code = qualifier + event_code
       
@@ -149,7 +149,7 @@ class dc05_msg:
       checksum = checksum if checksum != 0 else 'F'
       
       # Complete message with checksum
-      complete_message = ' '.join(parts) + ' ' + str(checksum)
+      complete_message = ' '.join(parts) + ' ' + str(checksum) + ']'
       return complete_message
 
       
