@@ -143,10 +143,10 @@ class dc05_msg:
       parts = [account, '18', qualifier_code, area, zone]
 
       # Calculate checksum
-      checksum = self.calculate_checksum(parts)
       total = sum(int(digit) if digit != '0' else 10 for part in parts for digit in part)
       next_multiple = ((total // 15) + 1) * 15
-      checksum = next_multiple - total if checksum != 0 else 'F'
+      checksum = next_multiple - total 
+      checksum = checksum if checksum != 0 else 'F'
       
       # Complete message with checksum
       complete_message = ' '.join(parts) + ' ' + str(checksum)
