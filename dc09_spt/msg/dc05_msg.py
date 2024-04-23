@@ -96,3 +96,60 @@ class dc05_msg:
                 zone = ('000' + zone)[-3:]
             msg += q + code + ' ' + area + ' ' + zone + ']'
         return msg 
+  
+    @staticmethod
+    def conactid2dc05(spt_account,  params={}):   
+      """
+      Construct a DC05 message, also called Ademco Contact ID
+      Parameters
+          spt_account
+              the account of the alarm transceiver.
+              in most situations this will be used in the alarm message too, but for situations like
+              a cloud based receiver, the account in the map will be different.
+          params
+              a map with key-value pairs.
+              at this moment only the more commonly used fields are used.
+              the currently handled keys are:
+                  account
+                      the account number.
+                      most receivers expect 4 to 8 numeric digits
+                  area
+                      the area number in which the event happened
+                      (area is a part of an installation that can arm and disarm independently)
+                  zone
+                      the alarm zone.
+                  code
+                      the event code in 3 numbers according to the DC05 standard.
+                  q
+                      the qualifier defining the state of the alarm.
+                      1 means new alarm
+                      3 means new restore
+                      6 means old alarm
+      """
+      account = param.strpar(params,  'account',  spt_account)
+      zone = param.numpar(params, 'zone',  '000')
+      area = param.numpar(params, 'area', '00')
+      qualifier = param.numpar(params, 'q', '1')
+      event_code = param.numpar(params, 'code', '602')
+      
+      if len(event_code) != 3:
+          raise ValueError("Event code should be 3 digits")
+      
+      if qualifier not in ['1', '3']:
+          raise ValueError("Qualifier should be 1 (new event) or 3 (restore)")
+
+      qualifier_code = qualifier + event_code
+      
+      parts = [account, '18', qualifier_code, area, zone]
+
+      # Calculate checksum
+      checksum = self.calculate_checksum(parts)
+      total = sum(int(digit) if digit != '0' else 10 for part in parts for digit in part)
+      next_multiple = ((total // 15) + 1) * 15
+      checksum = next_multiple - total if checksum != 0 else 'F'
+      
+      # Complete message with checksum
+      complete_message = ' '.join(parts) + ' ' + str(checksum)
+      return complete_message
+
+      
